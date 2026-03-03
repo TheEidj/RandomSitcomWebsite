@@ -1,0 +1,66 @@
+{
+  "name": "randomsitcomwebsite",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@10",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n db,shared,api,web -c cyan,magenta,blue,green \"npm run dev -w @acme/db\" \"npm run dev -w @acme/shared\" \"npm run dev -w @acme/api\" \"npm run dev -w web\"",
+    "build": "npm run build -ws",
+    "test": "npm run test -ws --if-present",
+    "lint": "npm run lint -ws --if-present",
+    "typecheck": "npm run typecheck -ws --if-present",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "prepare": "husky",
+    "db:generate": "npm run prisma:generate -w @acme/db",
+    "db:migrate:dev": "npm run prisma:migrate:dev -w @acme/db",
+    "db:seed": "npm run prisma:seed -w @acme/db",
+    "db:studio": "npm run prisma:studio -w @acme/db",
+    "ci:verify": "npm run db:generate && npm run format:check && npm run lint && npm run typecheck && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.{js,jsx,ts,tsx}": [
+      "npm run lint -ws --if-present"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheEidj/RandomSitcomWebsite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheEidj/RandomSitcomWebsite/issues"
+  },
+  "homepage": "https://github.com/TheEidj/RandomSitcomWebsite#readme",
+  "overrides": {
+    "eslint": "^9.39.2",
+    "@eslint/js": "^9.39.2",
+    "prisma": "6.19.2",
+    "@prisma/client": "6.19.2"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@eslint/js": "^9.39.2",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.55.0"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+build
+coverage
+**/.tsbuildinfo
+**/.vite
+**/.vite-temp
+.git
+.idea
+.DS_Store
+npm-debug.log*

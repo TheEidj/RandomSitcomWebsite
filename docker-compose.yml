@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: randomsitcom-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    profiles: ["deps", "full"]
+
+  api:
+    container_name: randomsitcom-api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/repo/apps/api
+      - ./packages/shared:/repo/packages/shared
+      - ./packages/db:/repo/packages/db
+      - /repo/apps/api/node_modules
+      - /repo/packages/shared/node_modules
+      - /repo/packages/db/node_modules
+    command: npm run dev -w @acme/api
+    profiles: ["full"]
+
+  web:
+    container_name: randomsitcom-web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/repo/apps/web
+      - ./packages/shared:/repo/packages/shared
+      - ./packages/db:/repo/packages/db
+      - /repo/apps/web/node_modules
+      - /repo/packages/shared/node_modules
+      - /repo/packages/db/node_modules
+    command: npm run dev -w web -- --host 0.0.0.0 --port 5173
+    profiles: ["full"]
+
+volumes:
+  pgdata:
