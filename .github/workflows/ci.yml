@@ -62,11 +62,13 @@ jobs:
             --severity HIGH,CRITICAL \
             --ignore-unfixed \
             --exit-code 0 \
+            .
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-fs.sarif
+          category: trivy-fs
 
   docker_and_trivy_images:
     name: Docker build + Trivy image scan
@@ -137,8 +139,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image-api.sarif
+          category: trivy-image-api
 
       - name: Upload Web SARIF
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-image-web.sarif
+          category: trivy-image-web
