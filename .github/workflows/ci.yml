@@ -49,16 +49,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trivy filesystem scan (SARIF)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: sarif
-          output: trivy-fs.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
+      - name: Trivy filesystem scan (SARIF, report-only)
+        run: |
+          docker pull aquasec/trivy:0.56.1
+          docker run --rm \
+            -v "${{ github.workspace }}:/work" \
+            -w /work \
+            aquasec/trivy:0.56.1 \
+            fs \
+            --format sarif \
+            --output trivy-fs.sarif \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -98,24 +101,37 @@ jobs:
           load: true
           tags: local/acme-web:ci
 
-      - name: Trivy scan API image (SARIF)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: local/acme-api:ci
-          format: sarif
-          output: trivy-image-api.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
+      - name: Trivy scan API image (SARIF, report-only)
+        run: |
+          docker pull aquasec/trivy:0.56.1
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/work" \
+            -w /work \
+            aquasec/trivy:0.56.1 \
+            image \
+            --format sarif \
+            --output trivy-image-api.sarif \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            local/acme-api:ci
 
-      - name: Trivy scan Web image (SARIF)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: local/acme-web:ci
-          format: sarif
-          output: trivy-image-web.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
+      - name: Trivy scan Web image (SARIF, report-only)
+        run: |
+          docker pull aquasec/trivy:0.56.1
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/work" \
+            -w /work \
+            aquasec/trivy:0.56.1 \
+            image \
+            --format sarif \
+            --output trivy-image-web.sarif \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 0 \
+            local/acme-web:ci
 
       - name: Upload API SARIF
         uses: github/codeql-action/upload-sarif@v3
