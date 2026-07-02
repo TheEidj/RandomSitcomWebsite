@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,23 +18,106 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(CUSTOMER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  role            Role      @default(CUSTOMER)
+  emailVerified   Boolean   @default(false)
+  verifyToken     String?   @unique
+  verifyTokenExp  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  orders Order[]
+
+  carts Cart[]
 }
 
 model Product {
   id          String   @id @default(cuid())
   slug        String   @unique
   title       String
-  description String?
-  images      String[] @default([])
+  description String?  @db.Text
+  images      String   @db.Text // JSON array stored as text
   priceCts    Int
   currency    Currency @default(EUR)
   inStock     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  cartItems CartItem[]
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+}
+
+model Order {
+  id     String      @id @default(cuid())
+  userId String
+  user   User        @relation(fields: [userId], references: [id])
+  status OrderStatus @default(PENDING)
+
+  currency Currency
+  totalCts Int
+
+  // Shipping address
+  shippingEmail      String
+  shippingFullName   String
+  shippingAddress    String
+  shippingCity       String
+  shippingPostalCode String
+  shippingCountry    String
+  shippingPhone      String?
+
+  // Billing address (optional, same as shipping if not provided)
+  billingFullName   String?
+  billingAddress    String?
+  billingCity       String?
+  billingPostalCode String?
+  billingCountry    String?
+
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  title        String
+  slug         String
+  unitPriceCts Int
+  quantity     Int
 }

@@ -1,17 +1,18 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: randomsitcom-postgres
+  mysql:
+    image: mysql:8.4
+    container_name: randomsitcom-mysql
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "5433:5432"
+      - "3307:3306"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mysqldata:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -26,11 +27,12 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 3000
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
     ports:
       - "3000:3000"
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
     volumes:
       - ./apps/api:/repo/apps/api
@@ -39,7 +41,7 @@ services:
       - /repo/apps/api/node_modules
       - /repo/packages/shared/node_modules
       - /repo/packages/db/node_modules
-    command: npm run dev -w @acme/api
+    command: sh -lc "npm run db:generate && npm run dev -w @acme/api"
     profiles: ["full"]
 
   web:
@@ -65,4 +67,4 @@ services:
     profiles: ["full"]
 
 volumes:
-  pgdata:
+  mysqldata:

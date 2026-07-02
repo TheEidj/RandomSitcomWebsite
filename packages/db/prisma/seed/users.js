@@ -16,10 +16,12 @@ export async function seedUsers(prisma) {
       email: adminEmail,
       passwordHash: adminPasswordHash,
       role: "ADMIN",
+      emailVerified: true,
     },
     update: {
       passwordHash: adminPasswordHash,
       role: "ADMIN",
+      emailVerified: true,
     },
   });
 

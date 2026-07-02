@@ -2,6 +2,19 @@ import type { FastifyPluginAsync } from "fastify";
 import { prisma } from "@acme/db";
 import type { Product } from "@acme/shared";
 
+// Helpers for MySQL JSON string conversion
+const parseImages = (images: string): string[] => {
+  try {
+    return JSON.parse(images);
+  } catch {
+    return [];
+  }
+};
+
+const stringifyImages = (images: string[]): string => {
+  return JSON.stringify(images);
+};
+
 export const productsRoutes: FastifyPluginAsync = async (app) => {
   app.get("/db/ping", async () => {
     const result = await prisma.$queryRaw<{ ok: number }[]>`SELECT 1 as ok`;
@@ -16,7 +29,7 @@ export const productsRoutes: FastifyPluginAsync = async (app) => {
       slug: p.slug,
       title: p.title,
       description: p.description,
-      images: p.images,
+      images: parseImages(p.images),
       price: { amount: p.priceCts, currency: p.currency },
       inStock: p.inStock,
     })) satisfies Array<Product & { slug: string; description: string | null; images: string[] }>;
@@ -50,7 +63,7 @@ export const productsRoutes: FastifyPluginAsync = async (app) => {
           slug: p.slug,
           title: p.title,
           description: p.description,
-          images: p.images,
+          images: parseImages(p.images),
           price: { amount: p.priceCts, currency: p.currency },
           inStock: p.inStock,
         },
@@ -100,12 +113,14 @@ export const productsRoutes: FastifyPluginAsync = async (app) => {
         inStock: boolean;
       };
 
+      const images = stringifyImages(body.images ?? []);
+
       const created = await prisma.product.create({
         data: {
           slug: body.slug,
           title: body.title,
           description: body.description ?? null,
-          images: body.images ?? [],
+          images,
           priceCts: body.priceCts,
           currency: body.currency,
           inStock: body.inStock,

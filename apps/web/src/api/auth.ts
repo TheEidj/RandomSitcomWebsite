@@ -1,7 +1,9 @@
 export type LoginResponse = { token: string };
 export type MeResponse = { user: { id: string; role: "ADMIN" | "CUSTOMER" } };
+export type RegisterRequest = { email: string; password: string; redirect?: string };
 
-export async function login(email: string, password: string) {
+export async function login(req: { email: string; password: string }) {
+  const { email, password } = req;
   const base = (import.meta.env.VITE_API_URL as string).replace(/\/$/, "");
   const res = await fetch(`${base}/api/auth/login`, {
     method: "POST",
@@ -30,4 +32,20 @@ export async function me(token: string) {
   }
 
   return (await res.json()) as MeResponse;
+}
+
+export async function register(req: RegisterRequest) {
+  const base = (import.meta.env.VITE_API_URL as string).replace(/\/$/, "");
+  const res = await fetch(`${base}/api/auth/register`, {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Register failed: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
+  }
+
+  return (await res.json()) as { message: string };
 }
