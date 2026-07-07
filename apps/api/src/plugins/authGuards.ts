@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import "@fastify/jwt";
 
 export const authGuardsPlugin: FastifyPluginAsync = async (app) => {
   app.decorate("requireAuth", async (req: FastifyRequest, reply: FastifyReply) => {

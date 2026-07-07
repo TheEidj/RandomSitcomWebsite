@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import "../plugins/jwt.js";
 import argon2 from "argon2";
 import { prisma } from "@acme/db";
 import { randomBytes } from "crypto";

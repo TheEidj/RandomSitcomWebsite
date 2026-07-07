@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
+import "../plugins/jwt.js";
 import { prisma } from "@acme/db";
 
 export const ordersRoutes: FastifyPluginAsync = async (app) => {

@@ -149,7 +149,7 @@ jobs:
 
   build_and_push:
     name: Build & Push Docker images
-    needs: [quality, docker_and_trivy_images]
+    needs: [quality, trivy_fs, docker_and_trivy_images]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     timeout-minutes: 20
