@@ -18,9 +18,12 @@ CMD ["npm", "run", "dev", "-w", "web", "--", "--host", "0.0.0.0", "--port", "517
 
 FROM base AS build
 ENV NODE_ENV=production
-COPY apps/web apps/web
-COPY packages/shared packages/shared
-COPY packages/db packages/db
-RUN npm run prisma:generate -w @acme/db
-RUN npm run build -w @acme/shared
-RUN npm run build -w web
+COPY . .
+RUN npm run db:generate
+RUN npm run build -ws
+
+FROM nginx:alpine AS prod
+COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
