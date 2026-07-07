@@ -168,11 +168,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase repository name
+        id: repo
+        run: echo "repository=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Extract metadata
         id: meta-api
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/api
+          images: ghcr.io/${{ steps.repo.outputs.repository }}/api
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -182,7 +186,7 @@ jobs:
         id: meta-web
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/web
+          images: ghcr.io/${{ steps.repo.outputs.repository }}/web
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
@@ -215,23 +219,32 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Lowercase repository name
+        id: repo
+        run: echo "repository=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          REPO: ${{ steps.repo.outputs.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: REPO,GITHUB_TOKEN,GITHUB_ACTOR
           script: |
             set -e
             cd ~/app
 
             # Login to GitHub Container Registry
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
             # Pull latest images
-            docker pull ghcr.io/${{ github.repository }}/api:latest
-            docker pull ghcr.io/${{ github.repository }}/web:latest
+            docker pull ghcr.io/$REPO/api:latest
+            docker pull ghcr.io/$REPO/web:latest
 
             # Stop and remove old containers
             docker compose --profile prod down || true
