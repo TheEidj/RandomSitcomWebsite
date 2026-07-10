@@ -23,19 +23,19 @@ RUN npm run db:generate
 RUN npm run build -ws
 
 FROM node:20-alpine AS prod
-WORKDIR /app
+WORKDIR /repo
 ENV NODE_ENV=production
 
-# Copy built artifacts
+# Copy node_modules
 COPY --from=build /repo/node_modules ./node_modules
+
+# Copy built artifacts
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/packages/shared/dist ./packages/shared/dist
 COPY --from=build /repo/packages/db/dist ./packages/db/dist
 COPY --from=build /repo/packages/db/prisma ./packages/db/prisma
-COPY --from=build /repo/node_modules/@prisma ./node_modules/@prisma
-COPY --from=build /repo/node_modules/.prisma ./node_modules/.prisma
 
-# Copy package files
+# Copy package files (needed for module resolution)
 COPY --from=build /repo/package.json ./package.json
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 COPY --from=build /repo/packages/shared/package.json ./packages/shared/package.json
