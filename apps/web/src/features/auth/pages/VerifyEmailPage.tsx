@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { getApiBaseUrl } from "../../../api/http.js";
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -19,7 +20,7 @@ export function VerifyEmailPage() {
 
     const verify = async () => {
       try {
-        const base = (import.meta.env.VITE_API_URL as string).replace(/\/$/, "");
+        const base = getApiBaseUrl();
         console.log(`Token from URL: ${token}`);
         console.log(`Calling API: ${base}/api/auth/verify-email?token=${token}`);
 

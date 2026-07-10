@@ -1,6 +1,11 @@
 export function getApiBaseUrl() {
   const url = import.meta.env.VITE_API_URL as string | undefined;
-  if (!url) throw new Error("VITE_API_URL is not defined");
+  if (!url) {
+    // Default to same host with port 3000 in production
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    return `${protocol}//${hostname}:3000`;
+  }
   return url.replace(/\/$/, "");
 }
 

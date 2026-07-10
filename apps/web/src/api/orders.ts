@@ -1,5 +1,7 @@
+import { getApiBaseUrl } from "./http.js";
+
 function apiBase() {
-  return (import.meta.env.VITE_API_URL as string).replace(/\/$/, "");
+  return getApiBaseUrl();
 }
 
 export type Order = {

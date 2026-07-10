@@ -8,8 +8,10 @@ export type CreateProductInput = {
   inStock: boolean;
 };
 
+import { getApiBaseUrl } from "./http.js";
+
 export async function createProduct(token: string, input: CreateProductInput) {
-  const base = (import.meta.env.VITE_API_URL as string).replace(/\/$/, "");
+  const base = getApiBaseUrl();
   const res = await fetch(`${base}/api/products`, {
     method: "POST",
     headers: {

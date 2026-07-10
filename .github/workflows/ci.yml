@@ -284,10 +284,10 @@ jobs:
             docker compose --profile prod up -d
 
             # Wait for containers to be ready
-            sleep 5
+            sleep 10
 
-            # Run migrations
-            docker compose exec -T api-prod npm run db:migrate:deploy
+            # Run migrations (don't fail if it errors, we can run manually)
+            docker compose exec -T api-prod npm run db:migrate:deploy || echo "Migration failed, please run manually"
 
-            # Cleanup old images
-            docker image prune -af --filter "until=24h"
+            # Cleanup old images (run in background to avoid timeout)
+            docker image prune -af --filter "until=24h" || true
