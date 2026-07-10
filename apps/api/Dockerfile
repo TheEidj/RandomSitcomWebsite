@@ -41,5 +41,7 @@ COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 COPY --from=build /repo/packages/shared/package.json ./packages/shared/package.json
 COPY --from=build /repo/packages/db/package.json ./packages/db/package.json
 
+ENV NODE_PATH=/repo/node_modules
+
 EXPOSE 3000
 CMD ["node", "apps/api/dist/src/server.js"]
