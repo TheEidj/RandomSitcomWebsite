@@ -1,10 +1,12 @@
 export function getApiBaseUrl() {
   const url = import.meta.env.VITE_API_URL as string | undefined;
   if (!url) {
-    // Default to same host with port 3000 in production
+    // Fallback: auto-detect API URL (development or misconfiguration)
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
-    return `${protocol}//${hostname}:3000`;
+    const fallbackUrl = `${protocol}//${hostname}:3000`;
+    console.warn(`VITE_API_URL not set, using fallback: ${fallbackUrl}`);
+    return fallbackUrl;
   }
   return url.replace(/\/$/, "");
 }

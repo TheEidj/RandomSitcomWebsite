@@ -211,6 +211,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
+          build-args: |
+            VITE_API_URL=http://54.38.183.110:3000
 
   deploy:
     name: Deploy to VPS
