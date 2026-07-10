@@ -42,4 +42,4 @@ COPY --from=build /repo/packages/shared/package.json ./packages/shared/package.j
 COPY --from=build /repo/packages/db/package.json ./packages/db/package.json
 
 EXPOSE 3000
-CMD ["node", "apps/api/dist/server.js"]
+CMD ["node", "apps/api/dist/src/server.js"]
